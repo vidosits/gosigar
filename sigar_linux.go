@@ -114,24 +114,22 @@ func (self *Mem) GetIgnoringCGroups() error {
 }
 
 func (self *Mem) get(ignoreCGroups bool) error {
-	var available uint64 = MaxUint64
-	var buffers, cached uint64
 	table := map[string]*uint64{
 		"MemTotal":     &self.Total,
 		"MemFree":      &self.Free,
-		"MemAvailable": &available,
-		"Buffers":      &buffers,
-		"Cached":       &cached,
+		"MemAvailable": &self.Available,
+		"Buffers":      &self.Buffers,
+		"Cached":       &self.Cached,
 	}
 
 	if err := parseMeminfo(table); err != nil {
 		return err
 	}
 
-	if available == MaxUint64 {
-		self.ActualFree = self.Free + buffers + cached
+	if self.Available == MaxUint64 {
+		self.ActualFree = self.Free + self.Buffers + self.Cached
 	} else {
-		self.ActualFree = available
+		self.ActualFree = self.Available
 	}
 
 	self.Used = self.Total - self.Free
